@@ -1,23 +1,23 @@
-## Screenkey.ahk
+# Screenkey.ahk
 
-Screenkey.ahk is a tool that displays the keys that you type on the screen.
+Screenkey.ahk is a tool that displays the keys that you type anywhere in Windows.
 It can be useful for screencasts or remote help.
 
-It is implemented as an [Autohotkey](http://www.autohotkey.com/) script.
+It is available as an [Autohotkey](http://www.autohotkey.com/) script or standalone executable.
 
-![screenshot](https://cloud.githubusercontent.com/assets/981184/5126844/7eb761e6-70d0-11e4-9ba9-136273490cab.png)
+![image](https://github.com/mihaifm/screenkey.ahk/assets/981184/b94d0fd0-ba0b-4ae2-baa5-5b1faeda5b82)
 
-### Customization
+## Customization
 
 There are a few customization options that can be tweaked at the top of the script:
 
-Font settings:
+Font settings
 
-    fontSize = 20
-    fontName = Verdana
-    fontStyle = Bold
+    fontSize := 20
+    fontName := "Verdana"
+    fontStyle := "Bold"
 
-Maximum number of keys that can be displayed on the screen at any time:
+Maximum number of keys that can be displayed on the screen at any time
 
     numButtons := 5
 
@@ -29,12 +29,21 @@ Distance from the buttons to the edge of the window
     
     winMargin := 25
 
-Speed typing settings:
+Combo timer (in miliseconds). Old keys are cleared from display when a new key is pressed after the interval. 
+All keys typed within the interval will be displayed at the same time. Set to 0 to disable.
 
-    useSpeedTimer := true
-    speedTimer := 1000
+    comboTimer := 1000
 
-When `useSpeedTimer` is true, previous keys will be cleared when typing new keys after the specified interval (`speedTimer`)
-This is handy when trying to show key combos.
+Clear timer (in miliseconds). Clear everything in the UI after this interval. Set to 0 to never clear.
 
+    clearTimer := 5000
 
+Hide UI hotkey. Press this hotkey to hide the UI elements of the Screenkey window (the captured keys will still be displayed). Default is `Ctrl+Shift+h`
+
+    hideUIHotkey := ^+h
+
+## Command line parameters
+
+The script or the exe can be run with command line parameters. The name of the params is the same as the settings above. Use `-notransparent` to turn transparency off.
+
+    screenkey.exe -numButtons 9 -fontName Rockwell -fontSize 50 -comboTimer 300 -notransparent

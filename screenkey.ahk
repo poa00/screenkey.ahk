@@ -2,9 +2,9 @@
 ; Config area
 
 ; Font settings
-fontSize = 20                   
-fontName = Verdana
-fontStyle = Bold
+fontSize := 30
+fontName := "Verdana"
+fontStyle := "Bold"
 
 ; The max number of keys that are listed on the screen
 numButtons := 5
@@ -15,9 +15,41 @@ transparent := true
 ; Distance from the buttons to the edge of the window
 winMargin := 25
 
-; When this is true, old keys are cleared after the speed timer interval
-useSpeedTimer := true
-speedTimer := 1000
+; Clear old keys after the combo timer interval. Set to 0 to disable
+comboTimer := 1000
+
+; Clear everything in the UI after this interval. Set to 0 to never clear
+clearTimer := 5000
+
+; Hide UI hotkey
+hideUIHotkey = ^+h
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Command line arguments
+
+for n, param in A_Args
+{
+    if (param == "-hideUIHotkey" && n != A_Args.Length-1)
+      hideUIHotkey := A_Args[n+1]
+    if (param == "-fontSize" && n != A_Args.Length-1)
+      fontSize := A_Args[n+1]
+    if (param == "-fontName" && n != A_Args.Length-1)
+      fontName := A_Args[n+1]
+    if (param == "-fontStyle" && n != A_Args.Length-1)
+      fontStyle := A_Args[n+1]
+    if (param == "-numButtons" && n != A_Args.Length-1)
+      numButtons := A_Args[n+1]
+    if (param == "-transparent")
+      transparent := true
+    if (param == "-notransparent")
+      transparent := false
+    if (param == "-winMargin" && n != A_Args.Length-1)
+      winMargin := A_Args[n+1]
+    if (param == "-comboTimer" && n != A_Args.Length-1)
+      comboTimer := A_Args[n+1]
+    if (param == "-clearTimer" && n != A_Args.Length-1)
+      clearTimer := A_Args[n+1]
+}
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Font metrics functions
@@ -62,6 +94,9 @@ If (transparent)
     Gui Color, %TransColor%
     WinSet TransColor, %TransColor% 220, ahk_id %k_ID%
 }
+
+uiHidden := false
+Hotkey, %hideUIHotkey%, HideUILabel, UseErrorLevel
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Hotkeys
@@ -159,10 +194,16 @@ KeyHandle()
 
     WinMove ahk_id %k_ID%,,,, winWidth + 2 * winMargin
 
-    ; install the speed timer that clears all the buttons when the next key is hit
-    if (useSpeedTimer)
+    ; install the combo timer that clears all the buttons when the next key is hit
+    if (comboTimer > 0)
     {
-        SetTimer HandleSpeedType, %speedTimer%
+        SetTimer HandleComboType, %comboTimer%
+    }
+
+    if (clearTimer > 0)
+    {
+        SetTimer HandleClearTimer, Off 
+        SetTimer HandleClearTimer, %clearTimer%
     }
 }
 
@@ -284,6 +325,15 @@ Up(inkey)
 ; Install hotkeys
 
 CaptureKeyboardInputs()
+return
+
+HideUILabel:
+  uiHidden := !uiHidden
+  if (uiHidden)
+    Gui, -Caption
+  else
+    Gui, +Caption
+return
 
 ; special handling for special characters
 ~*;::
@@ -293,13 +343,23 @@ CaptureKeyboardInputs()
     KeyHandle()
 return
 
-HandleSpeedType:
+HandleComboType:
     current := 1
     clear := true
-    SetTimer HandleSpeedType, Off
+    SetTimer HandleComboType, Off
 return
 
+HandleClearTimer:
+    Loop % numButtons
+    {
+        i := A_Index
+        GuiControl Move, Button%i%, w0 
+    }
+    WinMove ahk_id %k_ID%,,,,200
+    SetTimer HandleClearTimer, Off
+return
 
 GuiClose:
-ExitApp
+  ExitApp
+return
 
